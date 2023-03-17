@@ -2,8 +2,24 @@ package processor
 
 import (
 	"context"
+	"github.com/rainu/wow-quest-client/internal/quest/crawler"
+	"github.com/rainu/wow-quest-client/internal/quest/model"
 	"github.com/sirupsen/logrus"
 )
+
+type job struct {
+	Crawler crawler.Crawler
+
+	QuestId  *int64
+	NpcId    *int64
+	ItemId   *int64
+	ObjectId *int64
+
+	ResultQuestChan  chan model.Quest
+	ResultNpcChan    chan model.NonPlayerCharacter
+	ResultItemChan   chan model.Item
+	ResultObjectChan chan model.Object
+}
 
 type worker struct {
 	jobChan chan job
@@ -29,47 +45,13 @@ func (w *worker) run(ctx context.Context) {
 		}
 
 		if curJob.QuestId != nil {
-			q, err := curJob.Crawler.GetQuest(ctx, *curJob.QuestId)
-			if err != nil {
-				logrus.WithField("quest_id", *curJob.QuestId).WithError(err).Error("Error while crawling quest.")
-			}
-
-			if q != nil {
-				curJob.ResultQuestChan <- *q
-			}
-		}
-
-		if curJob.NpcId != nil {
-			npc, err := curJob.Crawler.GetNpc(ctx, *curJob.NpcId)
-			if err != nil {
-				logrus.WithField("npc_id", *curJob.NpcId).WithError(err).Error("Error while crawling npc.")
-			}
-
-			if npc != nil {
-				curJob.ResultNpcChan <- *npc
-			}
-		}
-
-		if curJob.ObjectId != nil {
-			object, err := curJob.Crawler.GetObject(ctx, *curJob.ObjectId)
-			if err != nil {
-				logrus.WithField("object_id", *curJob.ObjectId).WithError(err).Error("Error while crawling object.")
-			}
-
-			if object != nil {
-				curJob.ResultObjectChan <- *object
-			}
-		}
-
-		if curJob.ItemId != nil {
-			item, err := curJob.Crawler.GetItem(ctx, *curJob.ItemId)
-			if err != nil {
-				logrus.WithField("item_id", *curJob.ItemId).WithError(err).Error("Error while crawling item.")
-			}
-
-			if item != nil {
-				curJob.ResultItemChan <- *item
-			}
+			w.doQuestJob(ctx, curJob)
+		} else if curJob.NpcId != nil {
+			w.doNpcJob(ctx, curJob)
+		} else if curJob.ObjectId != nil {
+			w.doObjectJob(ctx, curJob)
+		} else if curJob.ItemId != nil {
+			w.doItemJob(ctx, curJob)
 		}
 	}
 }

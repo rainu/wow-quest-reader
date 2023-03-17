@@ -1,13 +1,13 @@
 package processor
 
-type idIterator struct {
+type qIdIterator struct {
 	curId        int64
 	maxId        int64
 	alreadyKnown map[int64]bool
 }
 
-func newIter(knownIds []int64) *idIterator {
-	result := &idIterator{
+func newQuestIter(knownIds []int64) *qIdIterator {
+	result := &qIdIterator{
 		curId:        0,
 		maxId:        80000,
 		alreadyKnown: map[int64]bool{},
@@ -20,7 +20,7 @@ func newIter(knownIds []int64) *idIterator {
 	return result
 }
 
-func (i *idIterator) Next() int64 {
+func (i *qIdIterator) Next() int64 {
 	//find next id...
 	for i.alreadyKnown[i.curId] {
 		i.curId++

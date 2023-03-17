@@ -6,7 +6,7 @@ import (
 )
 
 func TestIdIterator_Next(t *testing.T) {
-	toTest := newIter([]int64{1, 2})
+	toTest := newQuestIter([]int64{1, 2})
 
 	assert.Equal(t, int64(0), toTest.Next())
 	assert.Equal(t, int64(3), toTest.Next())

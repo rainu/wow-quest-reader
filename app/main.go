@@ -3,7 +3,7 @@ package main
 import (
 	"context"
 	"github.com/rainu/wow-quest-client/internal/locale"
-	"github.com/rainu/wow-quest-client/internal/quest/processor"
+	questProcessor "github.com/rainu/wow-quest-client/internal/quest/processor"
 	"github.com/rainu/wow-quest-client/internal/quest/store/sqlite"
 	"github.com/sirupsen/logrus"
 	"os"
@@ -21,7 +21,7 @@ func main() {
 	}
 	defer store.Close()
 
-	p := processor.NewQuest(store, locale.English, locale.German)
+	p := questProcessor.New(store, locale.English, locale.German)
 	pDone := make(chan bool, 1)
 	pWg := sync.WaitGroup{}
 
