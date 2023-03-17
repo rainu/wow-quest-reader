@@ -63,7 +63,7 @@ func (p *processor) Run(ctx context.Context, workerCount int) {
 	}
 
 	// generate jobs...
-	p.generateQuestJobs(ctx, jobChan, questResultChan)
+	//p.generateQuestJobs(ctx, jobChan, questResultChan)
 	p.generateNpcJobs(ctx, jobChan, npcResultChan)
 	p.generateItemJobs(ctx, jobChan, itemResultChan)
 	p.generateObjectJobs(ctx, jobChan, objectResultChan)

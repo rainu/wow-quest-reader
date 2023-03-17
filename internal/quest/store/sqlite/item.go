@@ -44,3 +44,27 @@ func (s *store) SaveItem(ctx context.Context, item model.Item) error {
 
 	return err
 }
+
+func (s *store) GetItem(ctx context.Context, id int64) (*model.Item, error) {
+	rows, err := s.db.QueryContext(ctx, `SELECT `+fieldId+`, 
+		`+fieldName+
+		` FROM `+tableItem+` WHERE `+fieldId+` = ?`, id)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+
+	if !rows.Next() {
+		return nil, nil
+	}
+
+	i := model.Item{}
+
+	err = rows.Scan(&i.Id, &i.Name)
+	if err != nil {
+		logrus.WithError(err).Error("Unable to scan item!")
+		return nil, err
+	}
+
+	return &i, nil
+}

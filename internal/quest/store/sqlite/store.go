@@ -41,7 +41,8 @@ type store struct {
 }
 
 type iter struct {
-	rows *sql.Rows
+	rows  *sql.Rows
+	store *store
 }
 
 func New(path string) (common.Store, error) {

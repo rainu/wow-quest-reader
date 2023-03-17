@@ -2,6 +2,8 @@ package sqlite
 
 import (
 	"context"
+	"database/sql"
+	"github.com/rainu/wow-quest-client/internal/locale"
 	"github.com/rainu/wow-quest-client/internal/quest/model"
 	common "github.com/rainu/wow-quest-client/internal/quest/store"
 	"github.com/sirupsen/logrus"
@@ -101,6 +103,99 @@ func (s *store) SaveQuest(ctx context.Context, quest model.Quest) error {
 	return err
 }
 
+func (s *store) GetQuest(ctx context.Context, id int64, l locale.Locale) (*model.Quest, error) {
+	rows, err := s.db.Query(`SELECT `+fieldId+`, 
+		`+fieldLocale+`, 
+		`+fieldObsolete+`, 
+		`+fieldTitle+`, 
+		`+fieldDescription+`, 
+		`+fieldProgress+`, 
+		`+fieldCompletion+`, 
+		`+fieldStartNpc+`, 
+		`+fieldStartObject+`, 
+		`+fieldStartItem+`, 
+		`+fieldEndNpc+`, 
+		`+fieldEndObject+`, 
+		`+fieldEndItem+
+		` FROM `+tableQuest+` WHERE `+fieldId+` = ? AND `+fieldLocale+` = ?`, id, l)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+
+	return s.extractQuest(ctx, rows), nil
+}
+
+func (s *store) extractQuest(ctx context.Context, rows *sql.Rows) *model.Quest {
+	if rows == nil {
+		return nil
+	}
+
+	if ctx.Err() != nil {
+		rows.Close()
+		return nil
+	}
+
+	if !rows.Next() {
+		rows.Close()
+		return nil
+	}
+
+	q := model.Quest{}
+
+	var sNpc, sObject, sItem, eNpc, eObject, eItem *int64
+
+	err := rows.Scan(&q.Id, &q.Locale, &q.Obsolete,
+		&q.Title, &q.Description, &q.Progress, &q.Completion,
+		&sNpc, &sObject, &sItem,
+		&eNpc, &eObject, &eItem,
+	)
+	if err != nil {
+		rows.Close()
+		logrus.WithError(err).Error("Unable to scan quest!")
+		return nil
+	}
+
+	if sNpc != nil {
+		q.StartNPC, err = s.GetNpc(ctx, *sNpc)
+		if err != nil {
+			logrus.WithError(err).Error("Unable to get npc!")
+		}
+	}
+	if sObject != nil {
+		q.StartObject, err = s.GetObject(ctx, *sObject)
+		if err != nil {
+			logrus.WithError(err).Error("Unable to get object!")
+		}
+	}
+	if sItem != nil {
+		q.StartItem, err = s.GetItem(ctx, *sItem)
+		if err != nil {
+			logrus.WithError(err).Error("Unable to get item!")
+		}
+	}
+	if eNpc != nil {
+		q.EndNPC, err = s.GetNpc(ctx, *eNpc)
+		if err != nil {
+			logrus.WithError(err).Error("Unable to get npc!")
+		}
+	}
+	if eObject != nil {
+		q.EndObject, err = s.GetObject(ctx, *eObject)
+		if err != nil {
+			logrus.WithError(err).Error("Unable to get object!")
+		}
+	}
+	if eItem != nil {
+		q.EndItem, err = s.GetItem(ctx, *eItem)
+		if err != nil {
+			logrus.WithError(err).Error("Unable to get item!")
+		}
+	}
+
+	return &q
+}
+
 func (s *store) QuestIterator() common.Iterator {
 	rows, err := s.db.Query(`SELECT ` + fieldId + `, 
 		` + fieldLocale + `, 
@@ -123,58 +218,11 @@ func (s *store) QuestIterator() common.Iterator {
 	}
 
 	return &iter{
-		rows: rows,
+		rows:  rows,
+		store: s,
 	}
 }
 
 func (i *iter) Next(ctx context.Context) *model.Quest {
-	if i.rows == nil {
-		return nil
-	}
-
-	if ctx.Err() != nil {
-		i.rows.Close()
-		return nil
-	}
-
-	if !i.rows.Next() {
-		i.rows.Close()
-		return nil
-	}
-
-	q := model.Quest{}
-
-	var sNpc, sObject, sItem, eNpc, eObject, eItem *int64
-
-	err := i.rows.Scan(&q.Id, &q.Locale, &q.Obsolete,
-		&q.Title, &q.Description, &q.Progress, &q.Completion,
-		&sNpc, &sObject, &sItem,
-		&eNpc, &eObject, &eItem,
-	)
-	if err != nil {
-		i.rows.Close()
-		logrus.WithError(err).Error("Unable to scan quest!")
-		return nil
-	}
-
-	if sNpc != nil {
-		q.StartNPC = &model.NonPlayerCharacter{Id: *sNpc}
-	}
-	if sObject != nil {
-		q.StartObject = &model.Object{Id: *sObject}
-	}
-	if sItem != nil {
-		q.StartItem = &model.Item{Id: *sItem}
-	}
-	if eNpc != nil {
-		q.EndNPC = &model.NonPlayerCharacter{Id: *eNpc}
-	}
-	if eObject != nil {
-		q.EndObject = &model.Object{Id: *eObject}
-	}
-	if eItem != nil {
-		q.EndItem = &model.Item{Id: *eItem}
-	}
-
-	return &q
+	return i.store.extractQuest(ctx, i.rows)
 }

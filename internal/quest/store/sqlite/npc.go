@@ -45,3 +45,28 @@ func (s *store) SaveNpc(ctx context.Context, npc model.NonPlayerCharacter) error
 
 	return err
 }
+
+func (s *store) GetNpc(ctx context.Context, id int64) (*model.NonPlayerCharacter, error) {
+	rows, err := s.db.QueryContext(ctx, `SELECT `+fieldId+`, 
+		`+fieldName+`,
+		`+fieldType+
+		` FROM `+tableNpc+` WHERE `+fieldId+` = ?`, id)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+
+	if !rows.Next() {
+		return nil, nil
+	}
+
+	npc := model.NonPlayerCharacter{}
+
+	err = rows.Scan(&npc.Id, &npc.Name, &npc.Type)
+	if err != nil {
+		logrus.WithError(err).Error("Unable to scan npc!")
+		return nil, err
+	}
+
+	return &npc, nil
+}
