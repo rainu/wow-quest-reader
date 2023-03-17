@@ -33,7 +33,27 @@ func newClient(l locale.Locale) *client {
 }
 
 func (c *client) GetQuest(ctx context.Context, id int64) (*goquery.Document, error) {
-	req, err := http.NewRequest(http.MethodGet, fmt.Sprintf("%s/quest=%d", c.baseUrl, id), nil)
+	return c.get(ctx, fmt.Sprintf("%s/quest=%d", c.baseUrl, id))
+}
+
+func (c *client) GetNpc(ctx context.Context, id int64) (*goquery.Document, error) {
+	return c.get(ctx, fmt.Sprintf("%s/npc=%d", c.baseUrl, id))
+}
+
+func (c *client) GetObject(ctx context.Context, id int64) (*goquery.Document, error) {
+	return c.get(ctx, fmt.Sprintf("%s/object=%d", c.baseUrl, id))
+}
+
+func (c *client) GetItem(ctx context.Context, id int64) (*goquery.Document, error) {
+	return c.get(ctx, fmt.Sprintf("%s/item=%d", c.baseUrl, id))
+}
+
+func (c *client) GetZone(ctx context.Context, id int64) (*goquery.Document, error) {
+	return c.get(ctx, fmt.Sprintf("%s/zone=%d", c.baseUrl, id))
+}
+
+func (c *client) get(ctx context.Context, url string) (*goquery.Document, error) {
+	req, err := http.NewRequest(http.MethodGet, url, nil)
 	if err != nil {
 		return nil, fmt.Errorf("unable to prepare request: %w", err)
 	}

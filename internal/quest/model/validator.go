@@ -9,18 +9,6 @@ func (q *Quest) IsValid() error {
 	if q.Locale == "" {
 		return fmt.Errorf("missing locale")
 	}
-	if q.Title == "" {
-		return fmt.Errorf("missing title")
-	}
-	if q.Description == "" && q.Progress == "" && q.Completion == "" && !q.Obsolete {
-		return fmt.Errorf("missing description/progress/completion")
-	}
-	if q.StartNPC == nil && q.StartObject == nil && q.StartItem == nil && !q.Obsolete {
-		return fmt.Errorf("no start npc/object/item")
-	}
-	if q.EndNPC == nil && q.EndObject == nil && q.EndItem == nil && !q.Obsolete {
-		return fmt.Errorf("no end npc/object/item")
-	}
 
 	if q.StartNPC != nil && q.StartNPC.Id < 0 {
 		return fmt.Errorf("missing npc id")

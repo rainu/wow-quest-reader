@@ -43,7 +43,37 @@ func (s *store) SaveQuest(ctx context.Context, quest model.Quest) error {
 	return nil
 }
 
-func (s *store) Iterator() common.Iterator {
+func (s *store) GetUnfinishedNpcIds(ctx context.Context) ([]int64, error) {
+	//TODO implement me
+	panic("implement me")
+}
+
+func (s *store) SaveNpc(ctx context.Context, npc model.NonPlayerCharacter) error {
+	//TODO implement me
+	panic("implement me")
+}
+
+func (s *store) GetUnfinishedObjectIds(ctx context.Context) ([]int64, error) {
+	//TODO implement me
+	panic("implement me")
+}
+
+func (s *store) SaveObject(ctx context.Context, object model.Object) error {
+	//TODO implement me
+	panic("implement me")
+}
+
+func (s *store) GetUnfinishedItemIds(ctx context.Context) ([]int64, error) {
+	//TODO implement me
+	panic("implement me")
+}
+
+func (s *store) SaveItem(ctx context.Context, item model.Item) error {
+	//TODO implement me
+	panic("implement me")
+}
+
+func (s *store) QuestIterator() common.Iterator {
 	return &iter{
 		store:    s,
 		curIndex: 0,

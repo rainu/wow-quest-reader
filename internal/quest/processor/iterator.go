@@ -9,7 +9,7 @@ type idIterator struct {
 func newIter(knownIds []int64) *idIterator {
 	result := &idIterator{
 		curId:        0,
-		maxId:        100000,
+		maxId:        80000,
 		alreadyKnown: map[int64]bool{},
 	}
 

@@ -14,12 +14,15 @@ import (
 type processor struct {
 	store   store.Store
 	crawler map[locale.Locale]crawler.Crawler
+
+	nqCrawler crawler.Crawler
 }
 
 func NewQuest(store store.Store, locales ...locale.Locale) *processor {
 	result := &processor{
-		store:   store,
-		crawler: map[locale.Locale]crawler.Crawler{},
+		store:     store,
+		crawler:   map[locale.Locale]crawler.Crawler{},
+		nqCrawler: wowhead.New(locale.English),
 	}
 
 	for _, l := range locales {
@@ -32,7 +35,10 @@ func NewQuest(store store.Store, locales ...locale.Locale) *processor {
 func (p *processor) Run(ctx context.Context, workerCount int) {
 	workers := make([]worker, workerCount)
 	jobChan := make(chan job)
-	resultChan := make(chan model.Quest)
+	questResultChan := make(chan model.Quest)
+	npcResultChan := make(chan model.NonPlayerCharacter)
+	itemResultChan := make(chan model.Item)
+	objectResultChan := make(chan model.Object)
 	workerWg := sync.WaitGroup{}
 	persistenceWg := sync.WaitGroup{}
 
@@ -41,13 +47,12 @@ func (p *processor) Run(ctx context.Context, workerCount int) {
 	go func() {
 		defer persistenceWg.Done()
 
-		p.runPersistence(ctx, resultChan)
+		p.runPersistence(ctx, questResultChan, npcResultChan, itemResultChan, objectResultChan)
 	}()
 
 	for i := 0; i < workerCount; i++ {
 		workers[i] = worker{
-			jobChan:    jobChan,
-			resultChan: resultChan,
+			jobChan: jobChan,
 		}
 
 		workerWg.Add(1)
@@ -59,19 +64,27 @@ func (p *processor) Run(ctx context.Context, workerCount int) {
 	}
 
 	// generate jobs...
-	p.generateJobs(ctx, jobChan, resultChan)
+	p.generateJobs(ctx, jobChan, questResultChan, npcResultChan, itemResultChan, objectResultChan)
 
 	//wait until jobs are finished
 	workerWg.Wait()
 
-	//no one will write in resultChan anymore -> close them
-	close(resultChan)
+	//no one will write in *ResultChan anymore -> close them
+	close(questResultChan)
+	close(npcResultChan)
+	close(itemResultChan)
+	close(objectResultChan)
 
 	//wait for persistence
 	persistenceWg.Wait()
 }
 
-func (p *processor) generateJobs(ctx context.Context, jobChan chan job, resultChan chan model.Quest) {
+func (p *processor) generateJobs(ctx context.Context, jobChan chan job,
+	questChan chan model.Quest,
+	npcChan chan model.NonPlayerCharacter,
+	itemChan chan model.Item,
+	objectChan chan model.Object,
+) {
 	defer close(jobChan)
 
 	knownIds, err := p.store.GetQuestIds(ctx)
@@ -85,49 +98,55 @@ func (p *processor) generateJobs(ctx context.Context, jobChan chan job, resultCh
 		nextId := idIter.Next()
 		if nextId == -1 {
 			//end reached
-			return
+			break
 		}
 
 		// for each crawler (language)
 		for _, c := range p.crawler {
 			jobChan <- job{
-				Crawler:    c,
-				QuestId:    nextId,
-				ResultChan: resultChan,
+				Crawler:         c,
+				QuestId:         &nextId,
+				ResultQuestChan: questChan,
 			}
 		}
 	}
-}
 
-func (p *processor) runPersistence(ctx context.Context, resultChan chan model.Quest) {
-	logrus.Debug("Start persistence worker.")
-	defer func() {
-		logrus.Debug("Stop persistence worker.")
-	}()
+	knownIds, err = p.store.GetUnfinishedNpcIds(ctx)
+	if err != nil {
+		logrus.WithError(err).Error("Unable to get known npc ids!")
+		return
+	}
+	for i := 0; i < len(knownIds) && ctx.Err() == nil; i++ {
+		jobChan <- job{
+			Crawler:       p.nqCrawler,
+			NpcId:         &knownIds[i],
+			ResultNpcChan: npcChan,
+		}
+	}
 
-	for {
-		select {
-		case <-ctx.Done():
-			//context closed
-			return
-		case q, ok := <-resultChan:
-			if !ok {
-				return
-			}
+	knownIds, err = p.store.GetUnfinishedObjectIds(ctx)
+	if err != nil {
+		logrus.WithError(err).Error("Unable to get known object ids!")
+		return
+	}
+	for i := 0; i < len(knownIds) && ctx.Err() == nil; i++ {
+		jobChan <- job{
+			Crawler:          p.nqCrawler,
+			ObjectId:         &knownIds[i],
+			ResultObjectChan: objectChan,
+		}
+	}
 
-			log := logrus.WithField("quest_id", q.Id).WithField("locale", q.Locale)
-
-			if vErr := q.IsValid(); vErr != nil {
-				log.
-					WithError(vErr).
-					Warning("Quest is invalid.")
-				continue
-			}
-
-			err := p.store.SaveQuest(ctx, q)
-			if err != nil {
-				log.WithError(err).Error("Error while persisting quest!")
-			}
+	knownIds, err = p.store.GetUnfinishedItemIds(ctx)
+	if err != nil {
+		logrus.WithError(err).Error("Unable to get known item ids!")
+		return
+	}
+	for i := 0; i < len(knownIds) && ctx.Err() == nil; i++ {
+		jobChan <- job{
+			Crawler:        p.nqCrawler,
+			ItemId:         &knownIds[i],
+			ResultItemChan: itemChan,
 		}
 	}
 }

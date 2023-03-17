@@ -6,7 +6,15 @@ import (
 )
 
 type job struct {
-	Crawler    crawler.Crawler
-	QuestId    int64
-	ResultChan chan model.Quest
+	Crawler crawler.Crawler
+
+	QuestId  *int64
+	NpcId    *int64
+	ItemId   *int64
+	ObjectId *int64
+
+	ResultQuestChan  chan model.Quest
+	ResultNpcChan    chan model.NonPlayerCharacter
+	ResultItemChan   chan model.Item
+	ResultObjectChan chan model.Object
 }
