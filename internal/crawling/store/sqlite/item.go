@@ -2,7 +2,7 @@ package sqlite
 
 import (
 	"context"
-	"github.com/rainu/wow-quest-client/internal/quest/model"
+	"github.com/rainu/wow-quest-client/internal/model"
 	"github.com/sirupsen/logrus"
 	"time"
 )

@@ -2,8 +2,8 @@ package wowhead
 
 import (
 	"fmt"
+	common "github.com/rainu/wow-quest-client/internal/crawling/crawler"
 	"github.com/rainu/wow-quest-client/internal/locale"
-	common "github.com/rainu/wow-quest-client/internal/quest/crawler"
 	"regexp"
 	"strconv"
 )

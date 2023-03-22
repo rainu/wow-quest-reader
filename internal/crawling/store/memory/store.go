@@ -2,8 +2,8 @@ package memory
 
 import (
 	"context"
-	"github.com/rainu/wow-quest-client/internal/quest/model"
-	common "github.com/rainu/wow-quest-client/internal/quest/store"
+	common "github.com/rainu/wow-quest-client/internal/crawling/store"
+	"github.com/rainu/wow-quest-client/internal/model"
 	"sync"
 )
 

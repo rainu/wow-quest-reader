@@ -3,7 +3,7 @@ package store
 import (
 	"context"
 	"github.com/rainu/wow-quest-client/internal/locale"
-	"github.com/rainu/wow-quest-client/internal/quest/model"
+	"github.com/rainu/wow-quest-client/internal/model"
 )
 
 type Store interface {

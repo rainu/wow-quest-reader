@@ -5,5 +5,7 @@ type NonPlayerCharacter struct {
 	Name string
 	Type string
 
+	Male bool
+
 	Locations []Coordinate
 }

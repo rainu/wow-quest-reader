@@ -3,8 +3,8 @@ package sqlite
 import (
 	"database/sql"
 	_ "github.com/mattn/go-sqlite3"
-	"github.com/rainu/wow-quest-client/internal/quest/model"
-	common "github.com/rainu/wow-quest-client/internal/quest/store"
+	common "github.com/rainu/wow-quest-client/internal/crawling/store"
+	"github.com/rainu/wow-quest-client/internal/model"
 )
 
 const (

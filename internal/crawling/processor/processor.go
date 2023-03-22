@@ -2,11 +2,11 @@ package processor
 
 import (
 	"context"
+	"github.com/rainu/wow-quest-client/internal/crawling/crawler"
+	"github.com/rainu/wow-quest-client/internal/crawling/crawler/wowhead"
+	"github.com/rainu/wow-quest-client/internal/crawling/store"
 	"github.com/rainu/wow-quest-client/internal/locale"
-	"github.com/rainu/wow-quest-client/internal/quest/crawler"
-	"github.com/rainu/wow-quest-client/internal/quest/crawler/wowhead"
-	"github.com/rainu/wow-quest-client/internal/quest/model"
-	"github.com/rainu/wow-quest-client/internal/quest/store"
+	"github.com/rainu/wow-quest-client/internal/model"
 	"sync"
 )
 
