@@ -22,6 +22,14 @@ type KeyPresser interface {
 	PressRaw(ctrl, shift bool, keys ...int)
 }
 
+type KeyConfiguration struct {
+	HotKeyDescription system.Hotkey
+	HotKeyProgress    system.Hotkey
+	HotKeyCompletion  system.Hotkey
+
+	AddonKeyPressing system.KeyPressing
+}
+
 type Mp3Player interface {
 	Play(ctx context.Context, mp3Stream io.ReadCloser) error
 }

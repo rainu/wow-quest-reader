@@ -5,13 +5,11 @@ import (
 	"encoding/json"
 	"encoding/xml"
 	"fmt"
-	"github.com/micmonay/keybd_event"
 	processorModel "github.com/rainu/wow-quest-client/internal/companion/model"
 	"github.com/rainu/wow-quest-client/internal/companion/system"
 	"github.com/rainu/wow-quest-client/internal/locale"
 	"github.com/rainu/wow-quest-client/internal/model"
 	"github.com/sirupsen/logrus"
-	"golang.design/x/hotkey"
 	"io"
 	"strings"
 	"time"
@@ -47,7 +45,7 @@ type processor struct {
 	speechStore    SoundStore
 }
 
-func New(speechPool SpeechPool, mp3Player Mp3Player, store SoundStore) (*processor, error) {
+func New(speechPool SpeechPool, mp3Player Mp3Player, store SoundStore, keyConfig KeyConfiguration) (*processor, error) {
 	cba, err := system.NewClipboardAccess()
 	if err != nil {
 		return nil, fmt.Errorf("unable to create clipboard access: %w", err)
@@ -56,13 +54,10 @@ func New(speechPool SpeechPool, mp3Player Mp3Player, store SoundStore) (*process
 	result := &processor{
 		cba: cba,
 
-		//TODO: make hotkeys configurable
-		hkForDescription: system.Hotkey{Modifier: []hotkey.Modifier{}, Key: 0x2E},
-		hkForCompletion:  system.Hotkey{Modifier: []hotkey.Modifier{}, Key: 0x23},
-		hkForProgress:    system.Hotkey{Modifier: []hotkey.Modifier{}, Key: 0x22},
-
-		//TODO: make addon-binding configurable
-		kpAddon: system.KeyPressing{Ctrl: true, Keys: []int{keybd_event.VK_F12}},
+		hkForDescription: keyConfig.HotKeyDescription,
+		hkForCompletion:  keyConfig.HotKeyCompletion,
+		hkForProgress:    keyConfig.HotKeyProgress,
+		kpAddon:          keyConfig.AddonKeyPressing,
 
 		mp3Player:      mp3Player,
 		speechPool:     speechPool,

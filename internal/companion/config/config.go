@@ -1,7 +1,10 @@
 package config
 
 import (
+	"github.com/micmonay/keybd_event"
+	"github.com/rainu/wow-quest-client/internal/companion/system"
 	"github.com/sirupsen/logrus"
+	"golang.design/x/hotkey"
 	"gopkg.in/yaml.v3"
 	"os"
 	"path"
@@ -19,6 +22,15 @@ type Config struct {
 			Secret string `yaml:"secret"`
 		} `yaml:"aws"`
 	} `yaml:"sound"`
+
+	Key key `yaml:"key"`
+}
+
+type key struct {
+	Description system.Hotkey      `yaml:"description"`
+	Progress    system.Hotkey      `yaml:"progress"`
+	Completion  system.Hotkey      `yaml:"completion"`
+	Addon       system.KeyPressing `yaml:"addon"`
 }
 
 var appDir = determineApplicationDirectory()
@@ -42,9 +54,13 @@ func Read() Config {
 	result := Config{
 		Debug:    true,
 		LogLevel: logrus.InfoLevel,
+		Key: key{
+			Description: system.Hotkey{Modifier: []hotkey.Modifier{}, Key: 0x2E}, //DEL
+			Progress:    system.Hotkey{Modifier: []hotkey.Modifier{}, Key: 0x23}, //END
+			Completion:  system.Hotkey{Modifier: []hotkey.Modifier{}, Key: 0x22}, //PDOWN
+			Addon:       system.KeyPressing{Ctrl: true, Keys: []int{keybd_event.VK_F12}},
+		},
 	}
-
-	println(os.Getwd())
 
 	// read potential yaml config file
 	readConfigs(&result,
