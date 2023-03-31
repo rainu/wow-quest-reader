@@ -13,6 +13,7 @@ type SpeechPool interface {
 }
 
 type ClipboardAccess interface {
+	Clear(ctx context.Context)
 	Watch(ctx context.Context, contentChan chan string)
 }
 

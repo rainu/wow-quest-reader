@@ -17,6 +17,15 @@ func NewClipboardAccess() (*clipboardAccess, error) {
 	return &clipboardAccess{}, nil
 }
 
+func (c *clipboardAccess) Clear(ctx context.Context) {
+	logrus.Debug("Clear clipboard content.")
+
+	select {
+	case <-ctx.Done():
+	case <-clipboard.Write(clipboard.FmtText, []byte{}):
+	}
+}
+
 func (c *clipboardAccess) Watch(ctx context.Context, contentChan chan string) {
 	defer close(contentChan)
 

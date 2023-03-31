@@ -169,14 +169,17 @@ func (p *processor) runClipboardListener(ctx context.Context, cbContentChan chan
 
 			switch p.lastEvent {
 			case eventReadDescription:
+				p.cba.Clear(ctx)
 				p.handleRead(ctx, quest, p.speechStore.GetDescription, p.speechStore.GetFileLocationForDescription, func(q processorModel.QuestInformation) string {
 					return q.Description
 				})
 			case eventReadProgress:
+				p.cba.Clear(ctx)
 				p.handleRead(ctx, quest, p.speechStore.GetProgress, p.speechStore.GetFileLocationForProgress, func(q processorModel.QuestInformation) string {
 					return q.Progress
 				})
 			case eventReadCompletion:
+				p.cba.Clear(ctx)
 				p.handleRead(ctx, quest, p.speechStore.GetCompletion, p.speechStore.GetFileLocationForCompletion, func(q processorModel.QuestInformation) string {
 					return q.Completion
 				})
