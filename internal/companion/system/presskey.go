@@ -11,6 +11,12 @@ type keyPresser struct {
 	kb *keybd_event.KeyBonding
 }
 
+type KeyPressing struct {
+	Ctrl  bool
+	Shift bool
+	Keys  []int
+}
+
 func NewKeyPresser() (*keyPresser, error) {
 	kb, err := keybd_event.NewKeyBonding()
 	if err != nil {
@@ -28,10 +34,14 @@ func NewKeyPresser() (*keyPresser, error) {
 }
 
 func (k *keyPresser) PressCopy() {
-	k.Press(true, false, keybd_event.VK_C)
+	k.PressRaw(true, false, keybd_event.VK_C)
 }
 
-func (k *keyPresser) Press(ctrl, shift bool, keys ...int) {
+func (k *keyPresser) Press(kp KeyPressing) {
+	k.PressRaw(kp.Ctrl, kp.Shift, kp.Keys...)
+}
+
+func (k *keyPresser) PressRaw(ctrl, shift bool, keys ...int) {
 	k.kb.SetKeys(keys...)
 	k.kb.HasCTRL(ctrl)
 	k.kb.HasSHIFT(shift)
@@ -58,4 +68,6 @@ func (k *keyPresser) Press(ctrl, shift bool, keys ...int) {
 		log.WithError(err).Error("Unable to release key!")
 		return
 	}
+
+	log.Info("Pressed key.")
 }

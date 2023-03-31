@@ -6,11 +6,11 @@ import (
 )
 
 type QuestInformation struct {
-	Id         string `json:"i"`
-	Text       string `json:"t"`
-	Progress   string `json:"p"`
-	Completion string `json:"c"`
-	L          string `json:"l"`
+	Id          string `json:"i"`
+	Description string `json:"d"`
+	Progress    string `json:"p"`
+	Completion  string `json:"c"`
+	L           string `json:"l"`
 }
 
 func (q QuestInformation) Locale() locale.Locale {

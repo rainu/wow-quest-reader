@@ -15,7 +15,7 @@ type player struct {
 	mutex       sync.Mutex
 }
 
-func Speaker() *player {
+func NewSpeaker() *player {
 	return &player{}
 }
 
@@ -50,7 +50,7 @@ func (p *player) initialise(format beep.Format) error {
 	defer p.mutex.Unlock()
 
 	if !p.initialised {
-		err := speaker.Init(format.SampleRate, format.SampleRate.N(100*time.Microsecond))
+		err := speaker.Init(format.SampleRate, format.SampleRate.N(time.Second/10))
 		if err != nil {
 			return err
 		}

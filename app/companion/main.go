@@ -2,6 +2,7 @@ package main
 
 import (
 	"context"
+	"github.com/rainu/wow-quest-client/internal/companion/config"
 	"github.com/rainu/wow-quest-client/internal/companion/processor"
 	"github.com/rainu/wow-quest-client/internal/companion/store"
 	"github.com/rainu/wow-quest-client/internal/companion/system"
@@ -14,14 +15,16 @@ import (
 )
 
 func main() {
-	logrus.SetLevel(logrus.DebugLevel)
-	speechStore, err := store.NewSpeech("./wow")
+	cfg := config.Read()
+	logrus.SetLevel(cfg.LogLevel)
+
+	speechStore, err := store.NewSpeech(cfg.Sound.Directory)
 	if err != nil {
 		panic(err)
 	}
 
-	speechPool := aws.NewPool("<region>", "<key>", "<secret>")
-	p, err := processor.New(speechPool, system.Speaker(), speechStore)
+	speechPool := aws.NewPool(cfg.Sound.AmazonWebService.Region, cfg.Sound.AmazonWebService.Key, cfg.Sound.AmazonWebService.Secret)
+	p, err := processor.New(speechPool, system.NewSpeaker(), speechStore)
 	if err != nil {
 		panic(err)
 	}

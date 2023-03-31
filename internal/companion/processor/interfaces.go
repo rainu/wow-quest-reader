@@ -2,6 +2,7 @@ package processor
 
 import (
 	"context"
+	"github.com/rainu/wow-quest-client/internal/companion/system"
 	"github.com/rainu/wow-quest-client/internal/locale"
 	"github.com/rainu/wow-quest-client/internal/speech/sound"
 	"io"
@@ -13,6 +14,12 @@ type SpeechPool interface {
 
 type ClipboardAccess interface {
 	Watch(ctx context.Context, contentChan chan string)
+}
+
+type KeyPresser interface {
+	PressCopy()
+	Press(kp system.KeyPressing)
+	PressRaw(ctrl, shift bool, keys ...int)
 }
 
 type Mp3Player interface {

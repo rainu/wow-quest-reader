@@ -3,7 +3,9 @@ package processor
 import (
 	"context"
 	"encoding/json"
+	"encoding/xml"
 	"fmt"
+	"github.com/micmonay/keybd_event"
 	processorModel "github.com/rainu/wow-quest-client/internal/companion/model"
 	"github.com/rainu/wow-quest-client/internal/companion/system"
 	"github.com/rainu/wow-quest-client/internal/locale"
@@ -12,6 +14,7 @@ import (
 	"golang.design/x/hotkey"
 	"io"
 	"strings"
+	"time"
 )
 
 type event byte
@@ -26,9 +29,13 @@ const (
 type processor struct {
 	cba ClipboardAccess
 
+	keyPresser KeyPresser
+
 	hkForDescription system.Hotkey
 	hkForProgress    system.Hotkey
 	hkForCompletion  system.Hotkey
+
+	kpAddon system.KeyPressing
 
 	lastEvent event
 
@@ -47,10 +54,15 @@ func New(speechPool SpeechPool, mp3Player Mp3Player, store SoundStore) (*process
 	}
 
 	result := &processor{
-		cba:              cba,
+		cba: cba,
+
+		//TODO: make hotkeys configurable
 		hkForDescription: system.Hotkey{Modifier: []hotkey.Modifier{}, Key: 0x2E},
 		hkForCompletion:  system.Hotkey{Modifier: []hotkey.Modifier{}, Key: 0x23},
 		hkForProgress:    system.Hotkey{Modifier: []hotkey.Modifier{}, Key: 0x22},
+
+		//TODO: make addon-binding configurable
+		kpAddon: system.KeyPressing{Ctrl: true, Keys: []int{keybd_event.VK_F12}},
 
 		mp3Player:      mp3Player,
 		speechPool:     speechPool,
@@ -58,6 +70,11 @@ func New(speechPool SpeechPool, mp3Player Mp3Player, store SoundStore) (*process
 		speechCtx:      nil,
 		speechCancel:   nil,
 		speechDoneChan: nil,
+	}
+
+	result.keyPresser, err = system.NewKeyPresser()
+	if err != nil {
+		return nil, err
 	}
 
 	return result, nil
@@ -89,7 +106,24 @@ func (p *processor) runHotkeyListener(ctx context.Context, hkEventChan chan syst
 				p.lastEvent = eventReadCompletion
 			} else {
 				logrus.WithField("hotkey", fmt.Sprintf("%#v", hk)).Error("Unknown incoming hotkey!")
+				continue
 			}
+
+			// press the key which open the addon-frame inside WoW
+			p.keyPresser.Press(p.kpAddon)
+
+			// the opening frame will already select the whole content inside this frame
+			// just wait a bit for opening...
+			select {
+			case <-ctx.Done():
+				return
+			case <-time.NewTimer(250 * time.Millisecond).C:
+			}
+
+			// press <Ctrl+C> to copy the selected content into clipboard
+			p.keyPresser.PressCopy()
+
+			// the clipboard listener will than receive the content and do the corresponding action!
 		}
 	}
 }
@@ -112,16 +146,25 @@ func (p *processor) runClipboardListener(ctx context.Context, cbContentChan chan
 			return
 		case content := <-cbContentChan:
 			content = strings.TrimSpace(content)
-			if !strings.HasPrefix(content, "{") || !strings.HasSuffix(content, "}") {
-				continue
-			}
-
+			content = strings.ReplaceAll(content, "\n", "")
+			content = strings.ReplaceAll(content, "\r", "")
 			var quest processorModel.QuestInformation
-			if err := json.Unmarshal([]byte(content), &quest); err != nil {
-				println(err.Error())
+
+			logrus.WithField("content", content).Debug("New clipboard content detected!")
+
+			if strings.HasPrefix(content, "{") && strings.HasSuffix(content, "}") {
+				if err := json.Unmarshal([]byte(content), &quest); err != nil {
+					continue
+				}
+			} else if strings.HasPrefix(content, "<") && strings.HasSuffix(content, ">") {
+				if err := xml.Unmarshal([]byte(content), &quest); err != nil {
+					continue
+				}
+			} else {
 				continue
 			}
 			if !quest.IsValid() {
+				logrus.Debug("Quest is invalid. Skip this one.")
 				continue
 			}
 
@@ -132,7 +175,7 @@ func (p *processor) runClipboardListener(ctx context.Context, cbContentChan chan
 			switch p.lastEvent {
 			case eventReadDescription:
 				p.handleRead(ctx, quest, p.speechStore.GetDescription, p.speechStore.GetFileLocationForDescription, func(q processorModel.QuestInformation) string {
-					return q.Text
+					return q.Description
 				})
 			case eventReadProgress:
 				p.handleRead(ctx, quest, p.speechStore.GetProgress, p.speechStore.GetFileLocationForProgress, func(q processorModel.QuestInformation) string {
