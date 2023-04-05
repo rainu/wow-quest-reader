@@ -8,9 +8,9 @@ This WoW Addon will read the quest text with meant of AI text-to-speech API(s).
 
 # Installation
 
-1. Copy the [RainuQuestReader](./app/addon/RainuQuestReader) directory to 
+1. Unzip the [WoW_Addon.zip](https://github.com/rainu/wow-quest-reader/releases/) to 
     `&lt;World of Warcraft&gt;\_retail_\Interface\AddOns`
-2. Download the [Companion]()-Application and move them into a directory you want 
+2. Download the [companion-windows-amd64.exe](https://github.com/rainu/wow-quest-reader/releases/)-Application and move them into a directory you want 
 3. Create a file named `config.yml` **in the same directory** as the Companion-Application
    1. Insert at least the AWS-Credentials
    2. For more options see the **configuration** section
@@ -19,7 +19,7 @@ This WoW Addon will read the quest text with meant of AI text-to-speech API(s).
    1. Go to Keybinding settings in WoW
    2. Set the key for **Rainu Quest Reader** &gt; **Collect last quest information** to [ctrl]+&lt;F12&gt; 
       (or what ever you have configured - see **key.addon** in configuration section!)
-6. Now if you opens a quests you can press the read button (&lt;PAGE DOWN&gt; - or what ever you configured - see **key.read** in configuration section!)
+6. Now if you open a quests you can press the read button (&lt;PAGE DOWN&gt; - or what ever you configured - see **key.read** in configuration section!)
 
 # Configuration
 
@@ -50,7 +50,7 @@ sound:
 # How it works
 
 The Companion-Application observe the clipboard. The addon will collect the quest data while you playing WoW. 
-If the shortcut (**key.addon**) is pressed, the addon opens a hidden windows within all quest information as text selected.
+If the shortcut (**key.addon**) is pressed, the addon opens a hidden window within all quest information as text selected.
 Then the Companion-Application will copy the selected content into the clipboard by "pressing" &lt;CTRL&gt;+&lt;C&gt;. 
 The quest data is copied into the clipboard and the application will detect that content and will generate and
 play the speech. Because the generation will potential cost some money, the sound file fill be persisted inside the 
