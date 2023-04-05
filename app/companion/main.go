@@ -14,8 +14,18 @@ import (
 	"syscall"
 )
 
+var ApplicationVersion = "dev"
+var ApplicationCodeRev = "revision"
+
 func main() {
 	cfg := config.Read()
+
+	println("+------------------------------------+")
+	println("| Rainu's WoW Quest Reader Companion | ")
+	println("+------------------------------------+")
+	println(" Version: " + ApplicationVersion + "(" + ApplicationCodeRev + ")")
+	println()
+
 	logrus.SetLevel(cfg.LogLevel)
 
 	speechStore, err := store.NewSpeech(cfg.Sound.Directory)
