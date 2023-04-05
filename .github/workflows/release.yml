@@ -1,0 +1,106 @@
+on:
+  push:
+    tags:
+      - 'v*' # Push events to matching v*, i.e. v1.0, v20.15.10
+
+name: Create Release
+
+jobs:
+  release:
+    name: Create Github Release
+    runs-on: ubuntu-latest
+    steps:
+      - name: Create Release
+        id: create_release
+        uses: actions/create-release@v1
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          tag_name: ${{ github.ref }}
+          release_name: Release ${{ github.ref }}
+          draft: false
+          prerelease: false
+      - name: Output Release URL File
+        run: echo "${{ steps.create_release.outputs.upload_url }}" > release_url.txt
+      - name: Save Release URL File for publish
+        uses: actions/upload-artifact@v1
+        with:
+          name: release_url
+          path: release_url.txt
+
+  build:
+    name: Build
+    needs: [release]
+    strategy:
+      matrix:
+        go-os: [windows]
+        go-arch: [amd64]
+    runs-on: ubuntu-latest
+    steps:
+      - name: Load Release URL File from release job
+        uses: actions/download-artifact@v1
+        with:
+          name: release_url
+      - name: Get Release Upload URL
+        id: get_release_info
+        run: |
+          value=`cat release_url/release_url.txt`
+          echo ::set-output name=upload_url::$value
+      - name: Set up Go 1.x
+        uses: actions/setup-go@v4
+        with:
+          go-version: ^1.20
+        id: go
+      - name: Check out code into the Go module directory
+        uses: actions/checkout@v3
+      - name: Get dependencies
+        run: |
+          go get -v -t -d ./...
+          if [ -f Gopkg.toml ]; then
+              curl https://raw.githubusercontent.com/golang/dep/master/install.sh | sh
+              dep ensure
+          fi
+      - name: Build
+        id: binary_build
+        env:
+          CGO_ENABLED: 0
+          GOOS: ${{ matrix.go-os }}
+          GOARCH: ${{ matrix.go-arch }}
+        run: |
+          BINARY=companion-${{ matrix.go-os }}-${{ matrix.go-arch }}
+          if [ "$GOOS" = "windows" ]; then
+            BINARY=$BINARY.exe
+          fi
+          go build -a -o $BINARY -v -ldflags "-X main.ApplicationVersion=$(git describe --tags --abbrev=0) -X main.ApplicationCodeRev=$(git rev-parse --short HEAD)" ./app/companion
+
+          #transfer BINARY env variable to following steps
+          echo "::set-output name=binary_name::$BINARY"
+      - name: Pack Addon
+        id: addon_build
+        run: |
+          mkdir target
+          cp -r ./app/addon/RainuQuestReader target/
+          cp LICENSE target/RainuQuestReader/
+          
+          cd target
+          zip -r WoW_Addon.zip ./RainuQuestReader
+      - name: Upload Release Asset (companion application)
+        id: upload-release-asset-companion
+        uses: actions/upload-release-asset@v1
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          upload_url: ${{ steps.get_release_info.outputs.upload_url }}
+          asset_path: ./${{ steps.binary_build.outputs.binary_name }}
+          asset_name: ${{ steps.binary_build.outputs.binary_name }}
+          asset_content_type: application/octet-stream
+      - name: Upload Release Asset (addon)
+        id: upload-release-asset-addon
+        uses: actions/upload-release-asset@v1
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          upload_url: ${{ steps.get_release_info.outputs.upload_url }}
+          asset_path: ./target/WoW_Addon.zip
+          asset_name: WoW_Addon.zip
+          asset_content_type: application/zip
