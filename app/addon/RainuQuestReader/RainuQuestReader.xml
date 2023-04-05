@@ -1,0 +1,50 @@
+<Ui xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns="http://www.blizzard.com/wow/ui/" xsi:schemaLocation="http://www.blizzard.com/wow/ui/ ..\..\..\FrameXML\UI.xsd">
+  <Frame name="RainuQuestReaderFrame" parent="UIParent" movable="false" enableMouse="true" inherits="DialogBoxFrame">
+    <Size>
+      <AbsDimension x="0" y="0"/>
+    </Size>
+    <Layers>
+      <Layer level="ARTWORK">
+        <FontString name="RainuQuestReaderText" inherits="GameFontHighlight">
+          <Anchors>
+            <Anchor point="TOPLEFT">
+              <Offset>
+                <AbsDimension x="5" y="-5"/>
+              </Offset>
+            </Anchor>
+          </Anchors>
+        </FontString>
+      </Layer>
+    </Layers>
+    <Frames>
+      <ScrollFrame name="RainuQuestReaderFrameScroll" inherits="UIPanelScrollFrameTemplate" toplevel="true">
+        <Anchors>
+          <Anchor point="TOP">
+            <Offset>
+              <AbsDimension x="-10" y="-16"/>
+            </Offset>
+          </Anchor>
+        </Anchors>
+        <Size>
+          <AbsDimension x="455" y="330"/>
+        </Size>
+        <ScrollChild>
+          <EditBox name="RainuQuestReaderFrameScrollText" letters="99999" multiLine="true" autoFocus="true" enableMouse="true">
+            <Size>
+              <AbsDimension x="450" y="344"/>
+            </Size>
+            <Scripts>
+              <OnTextChanged>
+                RainuQuestReader:OnTextChanged(self)
+              </OnTextChanged>
+              <OnEscapePressed>
+                RainuQuestReader:Hide(self)
+              </OnEscapePressed>
+            </Scripts>
+            <FontString inherits="ChatFontNormal"/>
+          </EditBox>
+        </ScrollChild>
+      </ScrollFrame>
+    </Frames>
+  </Frame>
+</Ui>

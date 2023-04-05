@@ -24,9 +24,7 @@ type KeyPresser interface {
 }
 
 type KeyConfiguration struct {
-	HotKeyDescription system.Hotkey
-	HotKeyProgress    system.Hotkey
-	HotKeyCompletion  system.Hotkey
+	HotKeyReading system.Hotkey
 
 	AddonKeyPressing system.KeyPressing
 }
@@ -39,8 +37,10 @@ type SoundStore interface {
 	GetDescription(questId string, locale locale.Locale) io.ReadCloser
 	GetProgress(questId string, locale locale.Locale) io.ReadCloser
 	GetCompletion(questId string, locale locale.Locale) io.ReadCloser
+	GetGossip(gId string, locale locale.Locale) io.ReadCloser
 
 	GetFileLocationForDescription(questId string, locale locale.Locale) string
 	GetFileLocationForProgress(questId string, locale locale.Locale) string
 	GetFileLocationForCompletion(questId string, locale locale.Locale) string
+	GetFileLocationForGossip(gId string, locale locale.Locale) string
 }

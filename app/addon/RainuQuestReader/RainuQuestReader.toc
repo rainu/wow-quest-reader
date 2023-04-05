@@ -1,0 +1,5 @@
+﻿## Interface: 100007
+## Title: Rainu's Quest Reader 0.1
+## Author: Rainu
+RainuQuestReader.xml
+RainuQuestReader.lua

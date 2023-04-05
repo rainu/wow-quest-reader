@@ -1,0 +1,5 @@
+<Bindings>
+  <Binding name="RAINU_QUEST_READER_GET_QUEST_INFO" header="RainuQuestReader" category="Rainu Quest Reader">
+    RainuQuestReader:GetSelectedQuestInfo()
+  </Binding>
+</Bindings>

@@ -13,6 +13,7 @@ const (
 	kindDescription = "DESC"
 	kindCompletion  = "COMP"
 	kindProgress    = "PROG"
+	kindGossip      = "GOSS"
 )
 
 type speech struct {
@@ -44,6 +45,10 @@ func (s *speech) GetCompletion(questId string, locale locale.Locale) io.ReadClos
 	return s.get(questId, locale, kindCompletion)
 }
 
+func (s *speech) GetGossip(gossipId string, locale locale.Locale) io.ReadCloser {
+	return s.get(gossipId, locale, kindGossip)
+}
+
 func (s *speech) get(questId string, locale locale.Locale, kind string) io.ReadCloser {
 	soundPath := s.path(questId, locale, kind)
 	if _, err := os.Stat(soundPath); os.IsNotExist(err) {
@@ -69,6 +74,10 @@ func (s *speech) GetFileLocationForProgress(questId string, locale locale.Locale
 
 func (s *speech) GetFileLocationForCompletion(questId string, locale locale.Locale) string {
 	return s.getFileLocationFor(questId, locale, kindCompletion)
+}
+
+func (s *speech) GetFileLocationForGossip(gossipId string, locale locale.Locale) string {
+	return s.getFileLocationFor(gossipId, locale, kindGossip)
 }
 
 func (s *speech) getFileLocationFor(questId string, locale locale.Locale, kind string) string {

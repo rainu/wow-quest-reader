@@ -3,8 +3,8 @@ package processor
 import (
 	"context"
 	"encoding/json"
-	"encoding/xml"
 	"fmt"
+	"github.com/micmonay/keybd_event"
 	processorModel "github.com/rainu/wow-quest-client/internal/companion/model"
 	"github.com/rainu/wow-quest-client/internal/companion/system"
 	"github.com/rainu/wow-quest-client/internal/locale"
@@ -18,10 +18,8 @@ import (
 type event byte
 
 const (
-	eventNone            = event(iota)
-	eventReadDescription = event(iota)
-	eventReadProgress    = event(iota)
-	eventReadCompletion  = event(iota)
+	eventNone = event(iota)
+	eventRead = event(iota)
 )
 
 type processor struct {
@@ -29,9 +27,7 @@ type processor struct {
 
 	keyPresser KeyPresser
 
-	hkForDescription system.Hotkey
-	hkForProgress    system.Hotkey
-	hkForCompletion  system.Hotkey
+	hkForReading system.Hotkey
 
 	kpAddon system.KeyPressing
 
@@ -54,10 +50,8 @@ func New(speechPool SpeechPool, mp3Player Mp3Player, store SoundStore, keyConfig
 	result := &processor{
 		cba: cba,
 
-		hkForDescription: keyConfig.HotKeyDescription,
-		hkForCompletion:  keyConfig.HotKeyCompletion,
-		hkForProgress:    keyConfig.HotKeyProgress,
-		kpAddon:          keyConfig.AddonKeyPressing,
+		hkForReading: keyConfig.HotKeyReading,
+		kpAddon:      keyConfig.AddonKeyPressing,
 
 		mp3Player:      mp3Player,
 		speechPool:     speechPool,
@@ -84,7 +78,7 @@ func (p *processor) Run(ctx context.Context) {
 	go p.runClipboardListener(ctx, cbContentChan)
 	go p.cba.Watch(ctx, cbContentChan)
 
-	system.ListenForKeys(ctx, hkEventChan, p.hkForDescription, p.hkForCompletion, p.hkForProgress)
+	system.ListenForKeys(ctx, hkEventChan, p.hkForReading)
 }
 
 func (p *processor) runHotkeyListener(ctx context.Context, hkEventChan chan system.Hotkey) {
@@ -93,14 +87,17 @@ func (p *processor) runHotkeyListener(ctx context.Context, hkEventChan chan syst
 		case <-ctx.Done():
 			return
 		case hk := <-hkEventChan:
-			if isEq(hk, p.hkForDescription) {
-				p.lastEvent = eventReadDescription
-			} else if isEq(hk, p.hkForProgress) {
-				p.lastEvent = eventReadProgress
-			} else if isEq(hk, p.hkForCompletion) {
-				p.lastEvent = eventReadCompletion
+			if isEq(hk, p.hkForReading) {
+				p.lastEvent = eventRead
 			} else {
 				logrus.WithField("hotkey", fmt.Sprintf("%#v", hk)).Error("Unknown incoming hotkey!")
+				continue
+			}
+
+			if p.speechCtx != nil {
+				// user wants to interrupt the current speech
+				logrus.Info("Interrupt current playing speech.")
+				p.stopPlay(ctx)
 				continue
 			}
 
@@ -112,13 +109,16 @@ func (p *processor) runHotkeyListener(ctx context.Context, hkEventChan chan syst
 			select {
 			case <-ctx.Done():
 				return
-			case <-time.NewTimer(250 * time.Millisecond).C:
+			case <-time.NewTimer(50 * time.Millisecond).C:
 			}
 
 			// press <Ctrl+C> to copy the selected content into clipboard
 			p.keyPresser.PressCopy()
 
 			// the clipboard listener will than receive the content and do the corresponding action!
+
+			// close the addon-frame
+			p.keyPresser.PressRaw(false, false, keybd_event.VK_0)
 		}
 	}
 }
@@ -143,46 +143,45 @@ func (p *processor) runClipboardListener(ctx context.Context, cbContentChan chan
 			content = strings.TrimSpace(content)
 			content = strings.ReplaceAll(content, "\n", "")
 			content = strings.ReplaceAll(content, "\r", "")
-			var quest processorModel.QuestInformation
+			var info processorModel.Info
 
 			logrus.WithField("content", content).Debug("New clipboard content detected!")
 
 			if strings.HasPrefix(content, "{") && strings.HasSuffix(content, "}") {
-				if err := json.Unmarshal([]byte(content), &quest); err != nil {
-					continue
-				}
-			} else if strings.HasPrefix(content, "<") && strings.HasSuffix(content, ">") {
-				if err := xml.Unmarshal([]byte(content), &quest); err != nil {
+				if err := json.Unmarshal([]byte(content), &info); err != nil {
 					continue
 				}
 			} else {
 				continue
 			}
-			if !quest.IsValid() {
+			if !info.IsValid() {
 				logrus.Debug("Quest is invalid. Skip this one.")
 				continue
 			}
 
 			// interesting content available in clipboard!
-			log := logrus.WithField("quest_id", quest.Id)
+			log := logrus.WithField("quest_id", info.Quest.Id)
 			log.Info("Quest information in clipboard detected.")
 
 			switch p.lastEvent {
-			case eventReadDescription:
-				p.cba.Clear(ctx)
-				p.handleRead(ctx, quest, p.speechStore.GetDescription, p.speechStore.GetFileLocationForDescription, func(q processorModel.QuestInformation) string {
-					return q.Description
-				})
-			case eventReadProgress:
-				p.cba.Clear(ctx)
-				p.handleRead(ctx, quest, p.speechStore.GetProgress, p.speechStore.GetFileLocationForProgress, func(q processorModel.QuestInformation) string {
-					return q.Progress
-				})
-			case eventReadCompletion:
-				p.cba.Clear(ctx)
-				p.handleRead(ctx, quest, p.speechStore.GetCompletion, p.speechStore.GetFileLocationForCompletion, func(q processorModel.QuestInformation) string {
-					return q.Completion
-				})
+			case eventRead:
+				if info.Gossip != "" {
+					p.handleRead(ctx, info, p.speechStore.GetGossip, p.speechStore.GetFileLocationForGossip, gossipId, func(i processorModel.Info) string {
+						return i.Gossip
+					})
+				} else if info.Quest.Description != "" {
+					p.handleRead(ctx, info, p.speechStore.GetDescription, p.speechStore.GetFileLocationForDescription, questId, func(i processorModel.Info) string {
+						return i.Quest.Description
+					})
+				} else if info.Quest.Progress != "" {
+					p.handleRead(ctx, info, p.speechStore.GetProgress, p.speechStore.GetFileLocationForProgress, questId, func(i processorModel.Info) string {
+						return i.Quest.Progress
+					})
+				} else if info.Quest.Completion != "" {
+					p.handleRead(ctx, info, p.speechStore.GetCompletion, p.speechStore.GetFileLocationForCompletion, questId, func(i processorModel.Info) string {
+						return i.Quest.Completion
+					})
+				}
 			default:
 				log.Warn("Ignore clipboard content because no event fired before.")
 			}
@@ -193,12 +192,22 @@ func (p *processor) runClipboardListener(ctx context.Context, cbContentChan chan
 	}
 }
 
-func (p *processor) handleRead(ctx context.Context, quest processorModel.QuestInformation,
+func questId(i processorModel.Info) string {
+	return fmt.Sprintf("%d", i.Quest.Id)
+}
+
+func gossipId(i processorModel.Info) string {
+	return i.GossipId()
+}
+
+func (p *processor) handleRead(ctx context.Context, info processorModel.Info,
 	getFromStore func(string, locale.Locale) io.ReadCloser,
 	getStoreFileLocation func(string, locale.Locale) string,
-	chooseText func(processorModel.QuestInformation) string,
+	chooseId func(processorModel.Info) string,
+	chooseText func(processorModel.Info) string,
 ) {
-	log := logrus.WithField("quest_id", quest.Id).WithField("locale", quest.Locale())
+	id := chooseId(info)
+	log := logrus.WithField("id", id).WithField("locale", info.Locale())
 
 	p.stopPlay(ctx)
 
@@ -206,13 +215,13 @@ func (p *processor) handleRead(ctx context.Context, quest processorModel.QuestIn
 	speechCtx, speechCancel := context.WithCancel(ctx)
 	var mp3Stream io.ReadCloser
 
-	localSpeech := getFromStore(quest.Id, quest.Locale())
+	localSpeech := getFromStore(id, info.Locale())
 	if localSpeech != nil {
 		//use the local mp3 file instead of generating them again
 		mp3Stream = localSpeech
 		log.Info("Speech from local file.")
 	} else {
-		speechGenerator := p.speechPool.SpeechGeneratorFor(quest.Locale())
+		speechGenerator := p.speechPool.SpeechGeneratorFor(info.Locale())
 		if speechGenerator == nil {
 			log.Error("No speech generator found for given locale.")
 			return
@@ -221,14 +230,16 @@ func (p *processor) handleRead(ctx context.Context, quest processorModel.QuestIn
 		//ATTENTION: here we use the "global" context because if the current speech is interrupting (because another
 		// speech is incoming), the generation should NOT be interrupted. Because the speech should be saved to disk.
 		// Only the playing should be interrupted.
-		speechStream, err := speechGenerator.SpeechAsNpc(ctx, chooseText(quest), model.NonPlayerCharacter{Male: false})
+		speechStream, err := speechGenerator.SpeechAsNpc(ctx, chooseText(info), model.NonPlayerCharacter{
+			Male: info.Npc.Sex == processorModel.SexMale,
+		})
 		if err != nil {
 			log.WithError(err).Error("Unable to generate speech!")
 			return
 		}
 
 		// fork the speech stream to disk, so we can later use the file from disk instead of generating them again
-		mp3Stream, err = system.NewTeeReader(speechStream, getStoreFileLocation(quest.Id, quest.Locale()))
+		mp3Stream, err = system.NewTeeReader(speechStream, getStoreFileLocation(id, info.Locale()))
 		if err != nil {
 			log.WithError(err).Warn("Unable to initialise tee reader! The speech will not saved to disk!")
 			mp3Stream = speechStream

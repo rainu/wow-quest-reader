@@ -25,10 +25,8 @@ func main() {
 
 	speechPool := aws.NewPool(cfg.Sound.AmazonWebService.Region, cfg.Sound.AmazonWebService.Key, cfg.Sound.AmazonWebService.Secret)
 	p, err := processor.New(speechPool, system.NewSpeaker(), speechStore, processor.KeyConfiguration{
-		HotKeyDescription: cfg.Key.Description,
-		HotKeyProgress:    cfg.Key.Progress,
-		HotKeyCompletion:  cfg.Key.Completion,
-		AddonKeyPressing:  cfg.Key.Addon,
+		HotKeyReading:    cfg.Key.Read,
+		AddonKeyPressing: cfg.Key.Addon,
 	})
 	if err != nil {
 		panic(err)

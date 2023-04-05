@@ -1,10 +1,7 @@
 package model
 
-func (q QuestInformation) IsValid() bool {
-	if q.Id == "" {
-		return false
-	}
-	if q.Description == "" && q.Completion == "" && q.Progress == "" {
+func (i Info) IsValid() bool {
+	if i.L == "" && i.Player.Name == "" && i.Player.Sex == 0 {
 		return false
 	}
 
