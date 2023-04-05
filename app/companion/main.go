@@ -2,11 +2,11 @@ package main
 
 import (
 	"context"
-	"github.com/rainu/wow-quest-client/internal/companion/config"
-	"github.com/rainu/wow-quest-client/internal/companion/processor"
-	"github.com/rainu/wow-quest-client/internal/companion/store"
-	"github.com/rainu/wow-quest-client/internal/companion/system"
-	"github.com/rainu/wow-quest-client/internal/speech/sound/aws"
+	"github.com/rainu/wow-quest-reader/internal/companion/config"
+	"github.com/rainu/wow-quest-reader/internal/companion/processor"
+	"github.com/rainu/wow-quest-reader/internal/companion/store"
+	"github.com/rainu/wow-quest-reader/internal/companion/system"
+	"github.com/rainu/wow-quest-reader/internal/speech/sound/aws"
 	"github.com/sirupsen/logrus"
 	"os"
 	"os/signal"

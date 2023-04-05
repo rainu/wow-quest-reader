@@ -7,9 +7,9 @@ import (
 	"github.com/aws/aws-sdk-go-v2/service/polly"
 	"github.com/aws/aws-sdk-go-v2/service/polly/types"
 	"github.com/aws/smithy-go/logging"
-	"github.com/rainu/wow-quest-client/internal/locale"
-	"github.com/rainu/wow-quest-client/internal/model"
-	common "github.com/rainu/wow-quest-client/internal/speech/sound"
+	"github.com/rainu/wow-quest-reader/internal/locale"
+	"github.com/rainu/wow-quest-reader/internal/model"
+	common "github.com/rainu/wow-quest-reader/internal/speech/sound"
 	"github.com/sirupsen/logrus"
 	"io"
 )

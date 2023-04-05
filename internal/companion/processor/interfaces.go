@@ -2,9 +2,9 @@ package processor
 
 import (
 	"context"
-	"github.com/rainu/wow-quest-client/internal/companion/system"
-	"github.com/rainu/wow-quest-client/internal/locale"
-	"github.com/rainu/wow-quest-client/internal/speech/sound"
+	"github.com/rainu/wow-quest-reader/internal/companion/system"
+	"github.com/rainu/wow-quest-reader/internal/locale"
+	"github.com/rainu/wow-quest-reader/internal/speech/sound"
 	"io"
 )
 

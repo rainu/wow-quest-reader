@@ -3,9 +3,9 @@ package sqlite
 import (
 	"context"
 	"database/sql"
-	common "github.com/rainu/wow-quest-client/internal/crawling/store"
-	"github.com/rainu/wow-quest-client/internal/locale"
-	"github.com/rainu/wow-quest-client/internal/model"
+	common "github.com/rainu/wow-quest-reader/internal/crawling/store"
+	"github.com/rainu/wow-quest-reader/internal/locale"
+	"github.com/rainu/wow-quest-reader/internal/model"
 	"github.com/sirupsen/logrus"
 	"time"
 )

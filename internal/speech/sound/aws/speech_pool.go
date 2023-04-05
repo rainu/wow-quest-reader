@@ -1,8 +1,8 @@
 package aws
 
 import (
-	"github.com/rainu/wow-quest-client/internal/locale"
-	common "github.com/rainu/wow-quest-client/internal/speech/sound"
+	"github.com/rainu/wow-quest-reader/internal/locale"
+	common "github.com/rainu/wow-quest-reader/internal/speech/sound"
 	"github.com/sirupsen/logrus"
 )
 

@@ -2,7 +2,7 @@ package store
 
 import (
 	"fmt"
-	"github.com/rainu/wow-quest-client/internal/locale"
+	"github.com/rainu/wow-quest-reader/internal/locale"
 	"github.com/sirupsen/logrus"
 	"io"
 	"os"

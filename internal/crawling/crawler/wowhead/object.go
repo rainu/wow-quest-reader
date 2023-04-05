@@ -5,7 +5,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"github.com/PuerkitoBio/goquery"
-	"github.com/rainu/wow-quest-client/internal/model"
+	"github.com/rainu/wow-quest-reader/internal/model"
 	"github.com/sirupsen/logrus"
 	"strings"
 	"time"

@@ -3,7 +3,7 @@ package model
 import (
 	"crypto/sha1"
 	"encoding/hex"
-	"github.com/rainu/wow-quest-client/internal/locale"
+	"github.com/rainu/wow-quest-reader/internal/locale"
 	"strings"
 )
 

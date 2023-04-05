@@ -2,7 +2,7 @@ package config
 
 import (
 	"github.com/micmonay/keybd_event"
-	"github.com/rainu/wow-quest-client/internal/companion/system"
+	"github.com/rainu/wow-quest-reader/internal/companion/system"
 	"github.com/sirupsen/logrus"
 	"golang.design/x/hotkey"
 	"gopkg.in/yaml.v3"

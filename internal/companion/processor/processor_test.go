@@ -1,7 +1,7 @@
 package processor
 
 import (
-	"github.com/rainu/wow-quest-client/internal/companion/system"
+	"github.com/rainu/wow-quest-reader/internal/companion/system"
 	"github.com/stretchr/testify/assert"
 	"golang.design/x/hotkey"
 	"testing"

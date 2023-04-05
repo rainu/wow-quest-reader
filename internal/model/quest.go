@@ -1,6 +1,6 @@
 package model
 
-import "github.com/rainu/wow-quest-client/internal/locale"
+import "github.com/rainu/wow-quest-reader/internal/locale"
 
 type Quest struct {
 	Id       int64

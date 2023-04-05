@@ -2,7 +2,7 @@ package sound
 
 import (
 	"context"
-	"github.com/rainu/wow-quest-client/internal/model"
+	"github.com/rainu/wow-quest-reader/internal/model"
 	"io"
 )
 

@@ -2,9 +2,9 @@ package main
 
 import (
 	"context"
-	questProcessor "github.com/rainu/wow-quest-client/internal/crawling/processor"
-	"github.com/rainu/wow-quest-client/internal/crawling/store/sqlite"
-	"github.com/rainu/wow-quest-client/internal/locale"
+	questProcessor "github.com/rainu/wow-quest-reader/internal/crawling/processor"
+	"github.com/rainu/wow-quest-reader/internal/crawling/store/sqlite"
+	"github.com/rainu/wow-quest-reader/internal/locale"
 	"github.com/sirupsen/logrus"
 	"os"
 	"os/signal"

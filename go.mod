@@ -1,4 +1,4 @@
-module github.com/rainu/wow-quest-client
+module github.com/rainu/wow-quest-reader
 
 go 1.20
 
