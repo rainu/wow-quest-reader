@@ -33,7 +33,7 @@ func main() {
 		panic(err)
 	}
 
-	speechPool := aws.NewPool(cfg.Sound.AmazonWebService.Region, cfg.Sound.AmazonWebService.Key, cfg.Sound.AmazonWebService.Secret)
+	speechPool := aws.NewPool(cfg.Sound.AmazonWebService.Region, cfg.Sound.AmazonWebService.Key, cfg.Sound.AmazonWebService.Secret, cfg.Sound.AmazonWebService.SpeechRate)
 	p, err := processor.New(speechPool, system.NewSpeaker(), speechStore, processor.KeyConfiguration{
 		HotKeyReading:    cfg.Key.Read,
 		AddonKeyPressing: cfg.Key.Addon,

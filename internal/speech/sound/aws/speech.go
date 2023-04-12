@@ -16,10 +16,11 @@ import (
 
 type awsClient struct {
 	polly        *polly.Client
+	speechRate   string
 	languageCode types.LanguageCode
 }
 
-func New(region, key, secret string, l locale.Locale) (common.SpeechGenerator, error) {
+func New(region, key, secret, speechRate string, l locale.Locale) (common.SpeechGenerator, error) {
 	cfg := aws.Config{
 		Credentials: aws.CredentialsProviderFunc(func(_ context.Context) (aws.Credentials, error) {
 			return aws.Credentials{
@@ -42,7 +43,8 @@ func New(region, key, secret string, l locale.Locale) (common.SpeechGenerator, e
 	}
 
 	result := &awsClient{
-		polly: polly.NewFromConfig(cfg),
+		polly:      polly.NewFromConfig(cfg),
+		speechRate: speechRate,
 	}
 
 	switch l {
@@ -81,7 +83,7 @@ func (a *awsClient) speech(ctx context.Context, text string, voiceId types.Voice
 
 	o, err := a.polly.SynthesizeSpeech(ctx, &polly.SynthesizeSpeechInput{
 		OutputFormat: types.OutputFormatMp3,
-		Text:         aws.String(transformText(text)),
+		Text:         aws.String(transformText(text, a.speechRate)),
 		VoiceId:      voiceId,
 		Engine:       types.EngineNeural,
 		LanguageCode: a.languageCode,

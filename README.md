@@ -31,6 +31,7 @@ This WoW Addon will read the quest text with meant of AI text-to-speech API(s).
 | sound.aws.region |  | true | The AWS region which should be used. |
 | sound.aws.key |  | true | The AWS key which should be used. |
 | sound.aws.secret |  | true | The AWS secret which should be used. |
+| sound.aws.speechRate | 100% | false | The speech rate of generated speech. (x-slow, slow, medium, fast, x-fast, 20% - 200%) |
 | key.read | &lt;PAGE DOWN&gt; | false | The keybinding when the application should start reading. |
 | key.addon | [ctrl]+&lt;F12&gt; | false | The Keybinding for the addon. |
 
@@ -45,6 +46,7 @@ sound:
     region: "<region>"
     key: "<key>"
     secret: "<secret>"
+    speechRate: 150%
 ```
 
 # How it works

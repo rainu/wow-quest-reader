@@ -8,7 +8,7 @@ import (
 
 var loudSpeechParts = regexp.MustCompile(`\b[A-Z][A-Z ]*[A-Z]\b`)
 
-func transformText(text string) string {
+func transformText(text, rate string) string {
 	result := text
 	result = strings.ReplaceAll(result, "<", "")
 	result = strings.ReplaceAll(result, ">", "")
@@ -18,6 +18,10 @@ func transformText(text string) string {
 		result = strings.ReplaceAll(result, part, fmt.Sprintf(`<prosody volume="loud">%s</prosody>`, part))
 	}
 
-	result = fmt.Sprintf(`<speak>%s</speak>`, result)
+	if rate == "" {
+		result = fmt.Sprintf(`<speak>%s</speak>`, result)
+	} else {
+		result = fmt.Sprintf(`<speak><prosody rate="%s">%s</prosody></speak>`, rate, result)
+	}
 	return result
 }

@@ -17,9 +17,10 @@ type Config struct {
 	Sound struct {
 		Directory        string `yaml:"dir"`
 		AmazonWebService struct {
-			Region string `yaml:"region"`
-			Key    string `yaml:"key"`
-			Secret string `yaml:"secret"`
+			Region     string `yaml:"region"`
+			Key        string `yaml:"key"`
+			Secret     string `yaml:"secret"`
+			SpeechRate string `yaml:"speechRate"`
 		} `yaml:"aws"`
 	} `yaml:"sound"`
 
