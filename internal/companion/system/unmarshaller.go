@@ -56,6 +56,57 @@ func (h *Hotkey) UnmarshalYAML(unmarshal func(interface{}) error) error {
 	return nil
 }
 
+func (h *Hotkey) String() string {
+	if h == nil {
+		return ""
+	}
+
+	result := ""
+
+	for _, hm := range h.Modifier {
+		if result != "" {
+			result += "+"
+		}
+
+		found := false
+		for s, modifier := range modMap {
+			if hm == modifier {
+				result += "["
+				result += strings.ToUpper(s)
+				result += "]"
+
+				found = true
+				break
+			}
+		}
+
+		if !found {
+			result += fmt.Sprintf("[0x%x]", hm)
+		}
+	}
+
+	found := false
+	for s, key := range keyMap {
+		if key == h.Key {
+			if result != "" {
+				result += "+"
+			}
+			result += "<"
+			result += strings.ToUpper(s)
+			result += ">"
+
+			found = true
+			break
+		}
+	}
+
+	if !found {
+		result += fmt.Sprintf("<0x%x>", h.Key)
+	}
+
+	return result
+}
+
 var keyMap = _ikm()
 var modMap = _imm()
 

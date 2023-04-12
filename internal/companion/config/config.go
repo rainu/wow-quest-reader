@@ -28,8 +28,8 @@ type Config struct {
 }
 
 type key struct {
-	Read  system.Hotkey      `yaml:"read"`
-	Addon system.KeyPressing `yaml:"addon"`
+	Read  system.Hotkey `yaml:"read"`
+	Addon system.Hotkey `yaml:"addon"`
 }
 
 var appDir = determineApplicationDirectory()
@@ -55,7 +55,7 @@ func Read() Config {
 		LogLevel: logrus.InfoLevel,
 		Key: key{
 			Read:  system.Hotkey{Modifier: []hotkey.Modifier{}, Key: 0x22}, //PDOWN
-			Addon: system.KeyPressing{Ctrl: true, Keys: []int{keybd_event.VK_F12}},
+			Addon: system.Hotkey{Modifier: []hotkey.Modifier{hotkey.ModCtrl}, Key: keybd_event.VK_F12},
 		},
 	}
 

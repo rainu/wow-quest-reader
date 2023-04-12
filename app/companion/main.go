@@ -21,9 +21,21 @@ func main() {
 	cfg := config.Read()
 
 	println("+------------------------------------+")
-	println("| Rainu's WoW Quest Reader Companion | ")
+	println("| Rainu's WoW Quest Reader Companion |")
 	println("+------------------------------------+")
 	println(" Version: " + ApplicationVersion + "(" + ApplicationCodeRev + ")")
+	println()
+	println("Configuration:")
+	println("  KeySettings:")
+	println("    Hotkey: " + cfg.Key.Read.String())
+	println("    Addon-Binding: " + cfg.Key.Addon.String())
+	println("  Sound:")
+	println("    Directory: " + cfg.Sound.Directory)
+	println("    AWS:")
+	println("      Region: " + cfg.Sound.AmazonWebService.Region)
+	if cfg.Sound.AmazonWebService.SpeechRate != "" {
+		println("      SpeechRate: " + cfg.Sound.AmazonWebService.SpeechRate)
+	}
 	println()
 
 	logrus.SetLevel(cfg.LogLevel)
@@ -36,7 +48,7 @@ func main() {
 	speechPool := aws.NewPool(cfg.Sound.AmazonWebService.Region, cfg.Sound.AmazonWebService.Key, cfg.Sound.AmazonWebService.Secret, cfg.Sound.AmazonWebService.SpeechRate)
 	p, err := processor.New(speechPool, system.NewSpeaker(), speechStore, processor.KeyConfiguration{
 		HotKeyReading:    cfg.Key.Read,
-		AddonKeyPressing: cfg.Key.Addon,
+		AddonKeyPressing: cfg.Key.Addon.ToKeyPressing(),
 	})
 	if err != nil {
 		panic(err)
