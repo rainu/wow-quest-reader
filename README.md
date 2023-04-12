@@ -9,7 +9,7 @@ This WoW Addon will read the quest text with meant of AI text-to-speech API(s).
 # Installation
 
 1. Unzip the [WoW_Addon.zip](https://github.com/rainu/wow-quest-reader/releases/) to 
-    `&lt;World of Warcraft&gt;\_retail_\Interface\AddOns`
+    `<World of Warcraft>\_retail_\Interface\AddOns`
 2. Download the [companion-windows-amd64.exe](https://github.com/rainu/wow-quest-reader/releases/)-Application and move them into a directory you want 
 3. Create a file named `config.yml` **in the same directory** as the Companion-Application
    1. Insert at least the AWS-Credentials
