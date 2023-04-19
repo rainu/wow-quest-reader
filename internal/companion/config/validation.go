@@ -30,7 +30,7 @@ func (c *Config) Validate() {
 
 		if percentageRegexp.MatchString(r) {
 			sVal := percentageRegexp.FindStringSubmatch(r)[1]
-			iVal, err := strconv.ParseInt(sVal, 10, 8)
+			iVal, err := strconv.ParseUint(sVal, 10, 8)
 			if err != nil {
 				errors = append(errors, fmt.Errorf("invalid percentage value for speech rate: %w", err))
 			} else if iVal < 20 || iVal > 200 {
